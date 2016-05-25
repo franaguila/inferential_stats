@@ -1,0 +1,126 @@
+---
+title: "Stat200 hw2"
+output: html_document
+---
+PROBLEM 1
+
+(a) Compute the following probabilities using the normal approximation (which gives an approximate answer):
+
+(i)	choose n = 10 and p = 0.2, and then compute P(X < 3)
+
+```{r problem 1}
+pnorm(3, 2, sqrt(10*.2*.8))
+```
+
+(i)	choose n = 10 and p = 0.4, and then compute P(X < 3)
+
+```{r problem 1.2}
+pnorm(3, 4, sqrt(10*.4*.6))
+```
+
+(ii)	choose n = 50 and p = 0.2, and then compute P(X < 8)
+
+```{r problem 1.3}
+pnorm(8, 10, sqrt(50*.2*.8))
+```
+
+(iii)	choose n = 50 and p = 0.4, and then compute P(X < 8)
+
+```{r problem 1.4}
+pnorm(8, 20, sqrt(50*.4*.6))
+```
+Summarize the above results in no more than three sentences, i.e., in what cases the normal approximation may be reasonably accurate.
+
+Normal approximation seems to be more accurate when the proportion is closer to 0.5 than 0 or 1, and the sample size is larger.
+
+(b) The sample proportion ˆp can be defined as ˆp = X/n, where X is the number of success as in (a). For the cases in (i)–(iv) in (a), compute the probabilities P(ˆp < 0.3) using normal approximations. Which approximation(s) do you think may be the most accurate one based on what you have observed in (a) and why?
+
+```{r}
+pnorm(.3, .2, sqrt(.2*.8/10))
+
+pnorm(.3, .4, sqrt(.4*.6/10))
+
+pnorm(.3, .2, sqrt(.2*.8/50))
+
+pnorm(.3, .4, sqrt(.6*.4/50))
+```
+The same observation holds in this scenario. The approximations here generate the same values as the normal approximations in (a).
+
+PROBLEM 2
+
+a) In HW1 Problem 1 (b), you were asked to compare the birth weights for smoking and nonsmoking mother groups. Perform a hypothesis test to see if birthweights for smoking mothers are significantly lower than non-smoking mothers at 5% level. Please write down the hypotheses to be tested, the formula and value of the test statistic, the formula and value of the p-value, and your conclusion in words understandable by non-statisticians. Is your conclusion consistent with that in HW1 Problem 1 (b) (i.e., do you see clear contradiction or not)?
+
+```{r}
+birthwt <- read.csv("~/Downloads/birthwt.csv")
+View(birthwt)
+```
+
+```{r}
+boxplot(birthwt$bwt ~ birthwt$smoke)
+```
+
+Ho: mean bwt smokers = mean bwt nonsmokers
+Ha: mean mean bwt smokers < mean bwt nonsmokers
+
+```{r}
+birthwt$smokebwt <- ifelse(birthwt$smoke == 1, birthwt$bwt, NA)
+birthwt$nosmokebwt <- ifelse(birthwt$smoke == 0, birthwt$bwt, NA)
+
+t.test(birthwt$smokebwt, y = birthwt$nosmokebwt, alternative = 'less',
+       var.equal = TRUE, conf.level = 0.95)
+```
+
+We will reject the idea that the average birth weight of children of smoking mothers is equal to the average birth weight of nonsmoking mothers. This test supports the claim that the average birth weight of children of smoking mothers is less than the average birth weight of nonsmoking mothers.
+
+This result is consistent with the conclusion in HW1 Problem 1.
+
+c) It is claimed that the proportion of low birthweight in general population is less than 10%. A researcher is suspicious of this claim and hopes to prove that it is not true. Based on the given dataset, is there strong evidence against the claim? Is the result statistically significant at 5% level?
+
+Ho: µ ≤ 0.10 vs. Ha: µ > 0.10
+(Ha to prove that claim is not true, or that proportion is greater than 10%)
+
+```{r}
+sum(birthwt$low)/length(birthwt$low)
+sum(birthwt$low)
+59/189
+
+n <- 189
+phat <- sum(birthwt$low)/length(birthwt$low)
+p <- .1
+z <- (phat - p)/sqrt(p*(1-p)/n)
+z
+pvalue <- 1 - pnorm(z)
+pvalue
+```
+
+The result is statistically significant at the 5% level; therefore, we reject the null hypothesis.
+
+d) Find the 95% confidence intervals for
+
+(i)	the average birthweight for all smoking mothers
+
+```{r}
+t.test(birthwt$smokebwt)
+```
+
+(ii)	proportion of low birthweight for all mothers, respectively.
+
+```{r}
+phat - 1.96*sqrt(phat*(1-phat)/189)
+phat + 1.96*sqrt(phat*(1-phat)/189)
+```
+
+95% confidence interval: (0.246, 0.378)
+
+Problem 4
+
+(a) Draw a side-by-side boxplot for the birthweights for the three mother’s race groups. Do you see any differences in birthweights among the three groups?
+```{r}
+boxplot(birthwt$bwt ~ birthwt$race)
+```
+(c) Perform a one-way ANOVA to compare the birthweights for the three mother’s race groups. Are the differences in birthweights among the three groups statistically significant at 5% level and 1% level respectively?
+```{r}
+result <- aov(birthwt$bwt ~ birthwt$race)
+summary(result)
+```
+Yes, the differences are statistically significant at both the 5% level and 1% level.
